@@ -52,19 +52,20 @@ export const sortByWaves = (data: Script[]): ExecutionPlan => {
     });
   });
 
+  const K = 3;
+  let waveCount = 0;
+
   while (readyScripts.length > 0) {
-    const currWave = [...readyScripts];
-    readyScripts.length = 0;
+    waveCount++;
+    const currWave = readyScripts.splice(0, K);
     plan.waves.push(currWave.map((n) => n.id));
 
     currWave.forEach((wave) => {
       const dependents = adjacencyList.get(wave.id);
-      ops++;
 
       if (dependents) {
         dependents.forEach((dependentId) => {
           const depNode = nodeMap.get(dependentId);
-          ops++;
           if (depNode && depNode.degree > 0) {
             depNode.degree--;
             if (depNode.degree === 0) {
@@ -87,9 +88,8 @@ export const sortByWaves = (data: Script[]): ExecutionPlan => {
     }
   });
 
-  const E = data.reduce((sum, s) => sum + (s.dependencies.length || 0), 0);
-  const theoreticalMin = data.length + E;
-  plan.efficiency = Number(Math.min(1, theoreticalMin / (ops || 1)).toFixed(2));
+  plan.efficiency =
+    plan.waves.length > 0 ? Number((1 / plan.waves.length).toFixed(2)) : 0;
 
   return plan;
 };

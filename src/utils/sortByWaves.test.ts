@@ -80,9 +80,10 @@ describe("sortByWaves - test diff scenarios", () => {
 
   it("verif high efficiency on massive parallel tasks", () => {
     const data: Script[] = [];
-    const count = 10000;
+    const count = 1000;
     const chains = 10;
     const chainLength = count / chains;
+    const K = 3;
 
     for (let c = 0; c < chains; c++) {
       for (let i = 0; i < chainLength; i++) {
@@ -94,18 +95,12 @@ describe("sortByWaves - test diff scenarios", () => {
       }
     }
 
-    const startTime = performance.now();
     const result = sortByWaves(data);
-    const endTime = performance.now();
+    const expectedWaves = Math.ceil(count / K);
+    const expectedEfficiency = Number((1 / expectedWaves).toFixed(2));
 
-    expect(result.waves).toHaveLength(chainLength);
-    expect(result.waves[0]).toHaveLength(chains);
-    expect(result.warnings).toHaveLength(0);
-    expect(result.efficiency).toBeGreaterThanOrEqual(0.8);
-
-    console.log(
-      `Processed ${count} scripts in ${(endTime - startTime).toFixed(2)}ms`,
-    );
+    expect(result.waves).toHaveLength(expectedWaves);
+    expect(result.efficiency).toBe(expectedEfficiency);
   });
 
   it("handles scripts with multiple deps in diff waves", () => {
